@@ -8,6 +8,9 @@ import yaml
 from tabulate import tabulate
 
 from redis.collector import RedisMetricsCollector
+from linux.collector import LinuxMetricsCollector
+from kafka.collector import KafkaMetricsCollector
+from jvm.collector import JvmMetricsCollector
 
 
 def load_config(args) -> dict:
@@ -57,21 +60,37 @@ def print_output(metrics: dict, output: str):
 
 
 def main():
-	parser = argparse.ArgumentParser(description="Redis Monitoring (핵심 33선)")
+	parser = argparse.ArgumentParser(description="System Monitoring CLI")
 	parser.add_argument("--config", type=str, help="설정 파일 경로 (YAML)")
+	parser.add_argument("--target", type=str, choices=["redis", "linux", "kafka", "jvm"], default="redis", help="모니터링 대상")
 	parser.add_argument("--redis-url", type=str, help="Redis URL, 예: redis://localhost:6379/0")
+	parser.add_argument("--kafka-bootstrap", type=str, help="Kafka bootstrap servers, 예: localhost:9092")
+	parser.add_argument("--kafka-group", type=str, help="Kafka consumer group(선택, 제공 시 그룹 랙 추정)")
 	parser.add_argument("--interval", type=int, help="수집 주기(초). 0이면 1회 수집")
 	parser.add_argument("--output", type=str, choices=["pretty", "json"], help="출력 형식")
-	parser.add_argument("--ping-samples", type=int, help="핑 지연 샘플 수")
-	parser.add_argument("--ping-timeout-ms", type=int, help="핑 타임아웃(ms)")
+	parser.add_argument("--ping-samples", type=int, help="핑 지연 샘플 수 (redis)")
+	parser.add_argument("--ping-timeout-ms", type=int, help="핑 타임아웃(ms) (redis)")
 	args = parser.parse_args()
 
 	config = load_config(args)
-	collector = RedisMetricsCollector(
-		redis_url=config["redis_url"],
-		ping_samples=config["ping_samples"],
-		ping_timeout_ms=config["ping_timeout_ms"],
-	)
+	target = args.target or "redis"
+	if target == "redis":
+		collector = RedisMetricsCollector(
+			redis_url=config["redis_url"],
+			ping_samples=config["ping_samples"],
+			ping_timeout_ms=config["ping_timeout_ms"],
+		)
+	elif target == "linux":
+		collector = LinuxMetricsCollector()
+	elif target == "kafka":
+		collector = KafkaMetricsCollector(
+			bootstrap_servers=args.kafka_bootstrap,
+			group_id=args.kafka_group,
+		)
+	elif target == "jvm":
+		collector = JvmMetricsCollector()
+	else:
+		raise ValueError(f"unknown target: {target}")
 
 	interval = int(config["interval"])
 	while True:
