@@ -1,8 +1,10 @@
 import json
 import time
 from typing import Any, Dict, Tuple
-
-import redis
+import importlib
+import sys
+import sysconfig
+from pathlib import Path
 
 
 class RedisMetricsCollector:
@@ -10,7 +12,32 @@ class RedisMetricsCollector:
 		self.redis_url = redis_url
 		self.ping_samples = max(1, int(ping_samples))
 		self.ping_timeout_ms = max(1, int(ping_timeout_ms))
-		self.client = redis.from_url(redis_url, decode_responses=True, socket_timeout=ping_timeout_ms / 1000.0)
+		# 외부 패키지 'redis'와 로컬 패키지명이 충돌하므로, site-packages에서 강제로 로드
+		site_purelib = sysconfig.get_paths().get("purelib")
+		restore = False
+		# sys.modules에 로컬 패키지가 올라가 있으면 제거
+		try:
+			mod = sys.modules.get("redis")
+			if mod and hasattr(mod, "__file__"):
+				mod_path = Path(mod.__file__ or "").resolve()
+				project_root = Path(__file__).resolve().parents[1]
+				if str(project_root) in str(mod_path):
+					sys.modules.pop("redis", None)
+		except Exception:
+			pass
+		try:
+			if site_purelib and (not sys.path or sys.path[0] != site_purelib):
+				sys.path.insert(0, site_purelib)
+				restore = True
+			redis_py = importlib.import_module("redis")
+		finally:
+			if restore:
+				# site-packages를 임시로 앞에 둔 후 원복
+				try:
+					sys.path.remove(site_purelib)
+				except Exception:
+					pass
+		self.client = redis_py.from_url(redis_url, decode_responses=True, socket_timeout=ping_timeout_ms / 1000.0)
 
 	def _safe_get(self, dct: Dict[str, Any], key: str, default=None):
 		try:

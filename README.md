@@ -1,5 +1,7 @@
 # systools
 
+![](/public/systools.png)
+
 ## Install
 
 ```bash
@@ -16,6 +18,12 @@ python monitor.py --target redis --redis-url redis://localhost:6379/0 --interval
 
 # linux
 python monitor.py --target linux --interval 5 --output json
+
+# web dashboard (Flask)
+export REDIS_URL=redis://localhost:6379/0
+export KAFKA_BOOTSTRAP=localhost:9092
+python web/app.py
+# 브라우저에서 http://localhost:8000 접속
 ```
 
 - `--target`: redis | linux | kafka | jvm

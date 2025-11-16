@@ -9,8 +9,9 @@ from tabulate import tabulate
 
 from redis.collector import RedisMetricsCollector
 from linux.collector import LinuxMetricsCollector
-from kafka.collector import KafkaMetricsCollector
 from jvm.collector import JvmMetricsCollector
+from importlib.machinery import SourceFileLoader
+from pathlib import Path as _Path
 
 
 def load_config(args) -> dict:
@@ -83,7 +84,10 @@ def main():
 	elif target == "linux":
 		collector = LinuxMetricsCollector()
 	elif target == "kafka":
-		collector = KafkaMetricsCollector(
+		_kafka_mod = SourceFileLoader(
+			"systools_kafka_collector", str(_Path(__file__).resolve().parent / "kafka" / "collector.py")
+		).load_module()
+		collector = _kafka_mod.KafkaMetricsCollector(
 			bootstrap_servers=args.kafka_bootstrap,
 			group_id=args.kafka_group,
 		)
@@ -98,7 +102,7 @@ def main():
 			metrics = collector.collect_all()
 			print_output(metrics, config["output"])
 		except Exception as e:
-			print(f"[ERROR] {e}", file=sys.stderr)
+			print(f"[WARN] collect failed: {e}", file=sys.stderr)
 		if interval <= 0:
 			break
 		time.sleep(interval)
