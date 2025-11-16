@@ -64,6 +64,8 @@ def main():
 	parser.add_argument("--config", type=str, help="설정 파일 경로 (YAML)")
 	parser.add_argument("--target", type=str, choices=["redis", "linux", "kafka", "jvm"], default="redis", help="모니터링 대상")
 	parser.add_argument("--redis-url", type=str, help="Redis URL, 예: redis://localhost:6379/0")
+	parser.add_argument("--kafka-bootstrap", type=str, help="Kafka bootstrap servers, 예: localhost:9092")
+	parser.add_argument("--kafka-group", type=str, help="Kafka consumer group(선택, 제공 시 그룹 랙 추정)")
 	parser.add_argument("--interval", type=int, help="수집 주기(초). 0이면 1회 수집")
 	parser.add_argument("--output", type=str, choices=["pretty", "json"], help="출력 형식")
 	parser.add_argument("--ping-samples", type=int, help="핑 지연 샘플 수 (redis)")
@@ -81,7 +83,10 @@ def main():
 	elif target == "linux":
 		collector = LinuxMetricsCollector()
 	elif target == "kafka":
-		collector = KafkaMetricsCollector()
+		collector = KafkaMetricsCollector(
+			bootstrap_servers=args.kafka_bootstrap,
+			group_id=args.kafka_group,
+		)
 	elif target == "jvm":
 		collector = JvmMetricsCollector()
 	else:
