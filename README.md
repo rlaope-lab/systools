@@ -1,6 +1,6 @@
-# Redis Monitoring (핵심 33선 지표 수집기)
+# System Monitoring (Redis 포함, 확장 가능)
 
-이 도구는 Redis의 핵심 성능/메모리/영속성/네트워크/CPU/클러스터 지표 33선을 수집·표시합니다.  
+이 저장소는 시스템 모니터링 도구 모음입니다. 현재는 Redis 모니터링을 포함하며, 향후 Linux, Kafka, JVM 등으로 확장됩니다.  
 CLI로 즉시 사용하거나 주기적으로 출력할 수 있습니다.
 
 ## 설치
@@ -31,7 +31,7 @@ python monitor.py --config config.yaml
 
 CLI 옵션이 설정 파일을 덮어씁니다.
 
-## 수집 지표
+## Redis 수집 지표
 
 - 성능: instantaneous_ops_per_sec, latency_ms(핑 기반), total_commands_processed, keyspace_hits, keyspace_misses, hit_rate, expired_keys
 - 메모리: used_memory, used_memory_rss, used_memory_peak, mem_fragmentation_ratio, maxmemory, evicted_keys, allocator_stats(jemalloc)
@@ -46,5 +46,14 @@ CLI 옵션이 설정 파일을 덮어씁니다.
 
 - `latency_ms`는 `PING` 라운드트립 기반으로 추정합니다(간단·가벼움).
 - `input/output_buffer_length`는 `CLIENT LIST`를 통해 추정 합계를 계산합니다(필드명은 버전에 따라 차이).
+
+## 문서
+
+- Redis 지표 상세: docs/redis/metrics.md
+
+## 디렉터리 구조(요약)
+- `redis/`: Redis 모니터링 모듈
+- `linux/`, `kafka/`, `jvm/`: 향후 확장 모듈(현재 .gitkeep)
+- `docs/redis/`: Redis 관련 문서
 
 

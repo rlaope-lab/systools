@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 from tabulate import tabulate
 
-from redis_monitor.collector import RedisMetricsCollector
+from redis.collector import RedisMetricsCollector
 
 
 def load_config(args) -> dict:
