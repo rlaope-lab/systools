@@ -1,0 +1,6 @@
+redis_url: "redis://localhost:6379/0"
+interval: 5         # 초; 0이면 1회만 수집
+output: "pretty"    # pretty | json
+ping_samples: 3     # 지연 측정 시 PING 횟수
+ping_timeout_ms: 500
+
