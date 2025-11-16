@@ -98,7 +98,7 @@ def main():
 			metrics = collector.collect_all()
 			print_output(metrics, config["output"])
 		except Exception as e:
-			print(f"[ERROR] {e}", file=sys.stderr)
+			print(f"[WARN] collect failed: {e}", file=sys.stderr)
 		if interval <= 0:
 			break
 		time.sleep(interval)

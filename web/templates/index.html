@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>systools dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>systools</h1>
+    <p class="subtitle">간단 대시보드 (targets: redis, linux, kafka, jvm)</p>
+  </header>
+  <main>
+    {% for r in results %}
+      <section class="card">
+        <div class="card-title">
+          <h2>{{ r.name }}</h2>
+          {% if r.error %}
+            <span class="badge error">unavailable</span>
+          {% else %}
+            <span class="badge ok">ok</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if r.error %}
+            <pre class="muted">접속 불가: {{ r.error }}</pre>
+          {% else %}
+            <pre>{{ r.data | tojson(indent=2) }}</pre>
+          {% endif %}
+        </div>
+      </section>
+    {% endfor %}
+  </main>
+  <footer>
+    <div class="muted">updated: {{ ts }}</div>
+  </footer>
+</body>
+</html>
+
+
