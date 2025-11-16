@@ -1,0 +1,22 @@
+# 기본: 모든 텍스트 파일은 LF 정규화
+* text=auto eol=lf
+
+# 예외: HTML/CSS/JS는 라인엔드 변환 제외
+*.html -text
+*.css -text
+*.js -text
+
+# 공통 바이너리
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.xz binary
+
