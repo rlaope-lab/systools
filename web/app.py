@@ -1,11 +1,23 @@
 from flask import Flask, render_template, request
 import os
 import time
+import sys
+from pathlib import Path
+
+# 프로젝트 루트를 import 경로의 최우선에 추가 (외부 패키지 'redis'보다 로컬 'redis/' 우선)
+project_root = str(Path(__file__).resolve().parents[1])
+if project_root not in sys.path:
+	sys.path.insert(0, project_root)
 
 from redis.collector import RedisMetricsCollector
 from linux.collector import LinuxMetricsCollector
-from kafka.collector import KafkaMetricsCollector
 from jvm.collector import JvmMetricsCollector
+from importlib.machinery import SourceFileLoader
+from types import ModuleType
+
+# kafka collector는 외부 패키지 이름과 충돌을 피하기 위해 파일 경로로 동적 로드
+kafka_collector_path = Path(project_root) / "kafka" / "collector.py"
+KafkaMetricsCollector = SourceFileLoader("systools_kafka_collector", str(kafka_collector_path)).load_module().KafkaMetricsCollector
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 

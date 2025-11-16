@@ -3,38 +3,65 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>systools dashboard</title>
+  <title>systools</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <header>
     <h1>systools</h1>
-    <p class="subtitle">간단 대시보드 (targets: redis, linux, kafka, jvm)</p>
+    <div class="meta">
+      <span class="muted">updated {{ ts }}</span>
+    </div>
   </header>
-  <main>
+  <main class="grid">
     {% for r in results %}
-      <section class="card">
-        <div class="card-title">
-          <h2>{{ r.name }}</h2>
-          {% if r.error %}
-            <span class="badge error">unavailable</span>
-          {% else %}
-            <span class="badge ok">ok</span>
-          {% endif %}
+      <section class="card compact">
+        <div class="row">
+          <div class="title">
+            <span class="dot {% if r.error %}err{% else %}ok{% endif %}"></span>
+            <span class="name">{{ r.name }}</span>
+          </div>
+          <div class="status">
+            {% if r.error %}<span class="muted">unavailable</span>{% else %}<span class="muted">ok</span>{% endif %}
+          </div>
         </div>
-        <div class="card-body">
-          {% if r.error %}
-            <pre class="muted">접속 불가: {{ r.error }}</pre>
-          {% else %}
-            <pre>{{ r.data | tojson(indent=2) }}</pre>
-          {% endif %}
-        </div>
+        {% if r.error %}
+          <div class="kv muted">접속 불가: {{ r.error }}</div>
+        {% else %}
+          {% macro render_obj(obj, level=0) -%}
+            {% if obj is mapping %}
+              <div class="section level-{{ level }}">
+                {% for k, v in obj.items() %}
+                  {% if v is mapping %}
+                    <div class="group">
+                      <div class="group-title">{{ k }}</div>
+                      {{ render_obj(v, level+1) }}
+                    </div>
+                  {% elif v is sequence and (v is not string) %}
+                    <div class="kv">
+                      <div class="key">{{ k }}</div>
+                      <div class="val">{{ v|join(', ') }}</div>
+                    </div>
+                  {% else %}
+                    <div class="kv">
+                      <div class="key">{{ k }}</div>
+                      <div class="val">{{ v if v is not none else '-' }}</div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="kv">
+                <div class="key">value</div>
+                <div class="val">{{ obj }}</div>
+              </div>
+            {% endif %}
+          {%- endmacro %}
+          {{ render_obj(r.data, 0) }}
+        {% endif %}
       </section>
     {% endfor %}
   </main>
-  <footer>
-    <div class="muted">updated: {{ ts }}</div>
-  </footer>
 </body>
 </html>
 

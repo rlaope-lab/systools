@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time
 from typing import Any, Dict, List
 
@@ -16,7 +17,7 @@ class KafkaMetricsCollector:
 		self.group_id = group_id
 		self.timeout_ms = timeout_ms
 
-	def _build_consumer(self) -> KafkaConsumer | None:
+	def _build_consumer(self) -> "KafkaConsumer | None":
 		if KafkaConsumer is None or not self.bootstrap_servers:
 			return None
 		try:
@@ -34,7 +35,7 @@ class KafkaMetricsCollector:
 		except Exception:
 			return None
 
-	def _compute_topics_partitions(self, consumer: KafkaConsumer) -> Dict[str, int]:
+	def _compute_topics_partitions(self, consumer: "KafkaConsumer") -> Dict[str, int]:
 		num_topics = 0
 		num_partitions = 0
 		try:
@@ -48,7 +49,7 @@ class KafkaMetricsCollector:
 			pass
 		return {"num_topics": num_topics, "num_partitions": num_partitions}
 
-	def _num_brokers(self, consumer: KafkaConsumer) -> int | None:
+	def _num_brokers(self, consumer: "KafkaConsumer") -> int | None:
 		try:
 			cluster = consumer._client.cluster  # 내부 속성 사용(없으면 None)
 			if cluster:
@@ -57,12 +58,12 @@ class KafkaMetricsCollector:
 			return None
 		return None
 
-	def _group_lag(self, consumer: KafkaConsumer) -> int | None:
+	def _group_lag(self, consumer: "KafkaConsumer") -> int | None:
 		if not self.group_id:
 			return None
 		try:
 			topics = list(consumer.topics() or [])
-			tps: List[TopicPartition] = []
+			tps: List["TopicPartition"] = []
 			for t in topics:
 				parts = consumer.partitions_for_topic(t) or []
 				for p in parts:
